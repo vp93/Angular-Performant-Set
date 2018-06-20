@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <title>Angular Performant Set</title>
+  
+  
+  <link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'>
+
+      <link rel="stylesheet" href="css/style.css">
+
+  
+</head>
+
+<body>
+
+  <div class="container-fluid" ng-app="app">
+    <div ng-controller="MainController">
+        <div class="row">
+            <h1 class="text-center" ng-bind="mainTitle"></h1>
+            <h4 class="filterCount"></h4>
+            <div class="col-md-4">
+                <h2><span ng-bind="ngBindTitle"></span></h2>
+                <!-- <div class="col" ng-bind="placeHolderText"></div> -->
+                <button class="text-center" ng-click="reversePhotos()">Cause a $digest cycle</button>
+                <div ng-repeat="photo in photos track by photo.id">
+                    <span ng-bind="photo.title"></span>
+                </div>
+                <pre><code>
+//HTML
+// Use of ng-bind
+ng-bind="expression"
+            </code></pre>
+            </div>
+            <div class="col-md-4">
+                <h2>{{::interpolatedTitle}}</h2>
+                <!-- <div class="col" ng-bind="placeHolderText"></div> -->
+                <button class="text-center" ng-click="reversePhotos()">Cause a $digest cycle</button>
+                <div class="flex-parent" ng-repeat="photo in photos track by photo.id">
+                    <div class="flex-child">
+                        <span>{{::photo.title}}</span>
+                    </div>
+                </div>
+                <pre><code>
+//HTML
+// Interpolated binding 
+{ { } }  
+                </code></pre>
+            </div>
+            <div class="col-md-4">
+                <h2 compile-title></h2>
+                <!-- <div class="col" ng-bind="placeHolderText"></div> -->
+                <button class="text-center" ng-click="reversePhotos()">Cause a $digest cycle</button>
+                <div class="flex-parent" ng-repeat="photo in photos track by  photo.id">
+                    <div class="flex-child">
+                        <compiled-name-directive name="{{::photo.title}}">
+                            <span ng-bind="photo.title"></span>
+                        </compiled-name-directive>
+                    </div>
+                </div>
+                <pre><code>
+//JS
+//Binding with $attrs from directive.
+function compiledNameDirectice() {
+    return {
+        restrict: 'E',
+        compile: function($element, $attrs) {
+            angular.element($element[0]).addClass('compiled-name-class');
+            return function postLink($scope, $element, $attrs) {
+                angular.element($element[0]).innerHTML = $attrs.name;
+            };
+        }
+    };
+}
+                </code></pre>
+            </div>
+        </div>
+        <div class="row">
+            <h2 ng-bind="compliedLinkTitlte"></h2>
+            <div class="col-md-6 notComplied text-center">
+                <h3 ng-bind="linkTitle"></h3>
+                <div ng-repeat="friend in friends track by friend.id" ng-bind="friend.name" type="{{friend.type}}" link-list></div>
+                <pre><code>
+//JS
+function linkList() {
+
+    function link($scope, $element, $attrs) {
+//console.count('Base class and arbitrary class added equal amount of times.');
+        $element[0].className = 'base';
+        angular.element($element[0]).addClass($attrs.type);
+    }
+
+    return {
+        restrict: 'A',
+        link: link
+    };
+}
+            </code></pre>
+            </div>
+            <div class="col-md-6 compiled text-center">
+                <h3 ng-bind="compileTitle"></h3>
+                <div ng-repeat="friend in friends track by friend.id" ng-bind="friend.name" type="{{::friend.type}}" compile-list></div>
+                <pre><code>
+//JS
+function compileList() {
+    return {
+        restrict: 'A',
+        compile: function($element, $attrs) {
+//propogates base class for directives. Without having to call it twice.
+            angular.element($element[0]).addClass('base');
+//console.log('Base class here once, along with any other precompiled settings.');
+            return function postLink($scope, $element, $attrs) {
+//console.log('Arbitrary class here as many times as friends');
+                angular.element($element[0]).addClass($attrs.type);
+            };
+        }
+    };
+}
+            </code></pre>
+            </div>
+        </div>
+        <div class="row">
+            <h2 ng-bind="debouncingInputsTitle"></h2>
+            <h3 class="text-center" ng-bind="ngChangeTitle"></h3>
+            <div class="col-md-6 text-center">
+                <pre><code>
+//JS
+$scope.$watch('noDebouce', function(newValue) {
+    if (!newValue) return;
+    console.count('Digest Cycle\'s fired:');
+});
+//HTML
+ng-repeat="friend in filterFriends | filter:noDebouce track by friend.id"
+                </code></pre>
+                <div class="filterCount"></div>
+                <input type="text" ng-model="noDebouce">
+                <div ng-repeat="friend in filterFriends | filter:noDebouce track by friend.id" ng-bind="friend.name">
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <pre><code>
+//JS
+$scope.filterChars = function(name) {
+    console.log('Digest Cycle\'s fired:', count);
+    $scope.filteredCharacters = $filter('filter')($scope.characters, name);
+    count++;
+};
+//HTML
+ng-model="debouncingOptions" 
+ng-model-options="{ debounce: 1500 }" 
+ng-change="filterChars(debouncingOptions)"
+                </code></pre>
+                <input type="text" ng-model="debouncingOptions" ng-model-options="{ debounce: 500 }" ng-change="filterChars(debouncingOptions)">
+                <div ng-repeat="char in filteredCharacters track by char.id" ng-bind="char.name">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <h2 ng-bind="oneTimeBindingsTitle"></h2>
+            @todo
+            <div class="col-md-6"></div>
+            <div class="col-md-6"></div>
+        </div>
+    </div>
+</div>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular.min.js'></script>
+
+  
+
+    <script  src="js/index.js"></script>
+
+
+
+
+</body>
+
+</html>
